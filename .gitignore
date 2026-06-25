@@ -1,0 +1,3 @@
+services/order-service/node_modules
+services/log-service/node_modules
+.env
