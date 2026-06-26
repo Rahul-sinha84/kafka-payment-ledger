@@ -8,7 +8,7 @@ import { setupMongoConnection } from "./src/db/connection.js";
 import orderRouter from "./src/routers/order.js";
 
 const app = e();
-const PORT = process.env.PAYMENT_SERVICE_PORT || 8000;
+const PORT = process.env.ORDER_SERVICE_PORT || 8000;
 
 app.use(e.json());
 

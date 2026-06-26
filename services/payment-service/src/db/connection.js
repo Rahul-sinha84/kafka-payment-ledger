@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
-import Order from "./models/order.js";
+import Order from "./models/payment.js";
 
 let isConnected = false;
 let connectionAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-const path = process.env.ORDER_SERVICE_MONGO_DB_URI;
+const path = process.env.PAYMENT_SERVICE_MONGO_DB_URI;
 
 if (!path) {
-  throw new Error("ORDER_SERVICE_MONGO_DB_URI env is not set!");
+  throw new Error("PAYMENT_SERVICE_MONGO_DB_URI env is not set!");
 }
 
 const options = {

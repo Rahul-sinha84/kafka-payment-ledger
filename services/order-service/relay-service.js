@@ -24,7 +24,7 @@ const relayService = async () => {
             {
               key: outbox.aggregateId,
               value: JSON.stringify(outbox.payload),
-              headers: { outboxId: outbox._id.toString() }, // consumer will use this to dedupe
+              headers: { eventId: outbox._id.toString() }, // consumer will use this to dedupe
             },
           ],
         });
