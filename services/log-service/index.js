@@ -32,11 +32,11 @@ const run = async () => {
             console.log(`Order reached DLQ:${orderId}, of amount: ${amount}.`);
             break;
           }
-          case KafkaTopics.PaymentCreated: {
+          case KafkaTopics.PaymentCompleted: {
             const { orderId, amount } = JSON.parse(message.value.toString());
 
             console.log(
-              `Payment created for ${orderId}, of amount: ${amount}.`,
+              `Payment completed for ${orderId}, of amount: ${amount}.`,
             );
             break;
           }

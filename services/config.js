@@ -6,7 +6,8 @@ export const OutboxEventStatus = {
 export const KafkaTopics = {
   OrderCreated: "order.created",
   OrderCreatedDLQ: "order.created.dlq",
-  PaymentCreated: "payment.created",
+  PaymentCompleted: "payment.completed",
+  PaymentFailed: "payment.failed",
 };
 
 export const EventTypes = {

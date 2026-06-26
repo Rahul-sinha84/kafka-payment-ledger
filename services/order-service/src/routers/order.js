@@ -3,50 +3,73 @@ import mongoose from "mongoose";
 import Order from "../db/models/order.js";
 import Outbox from "../db/models/outbox.js";
 import { EventTypes, KafkaTopics } from "../../../config.js";
+import { reserveFunds } from "../ledgerClient.js";
 
 const orderRouter = Router();
 
 orderRouter.post("/", async (request, response) => {
-  const session = await mongoose.startSession();
   try {
-    session.startTransaction();
     console.log(request.body);
+    const { ObjectId } = mongoose.Types;
+    const orderId = new ObjectId().toString();
     const { amount, customerId } = request.body;
 
-    const [order] = await Order.create(
-      [
-        {
-          amount,
-          customerId,
-        },
-      ],
-      { session },
-    );
+    // check the balance from the ledger service first
+    const isReservedSuccessful = await reserveFunds({
+      amount,
+      customerId,
+      orderId,
+    });
 
-    await Outbox.create(
-      [
-        {
-          aggregateId: order._id.toString(),
-          topic: KafkaTopics.OrderCreated,
-          eventType: EventTypes.OrderCreated,
-          payload: {
-            orderId: order._id.toString(),
+    if (!isReservedSuccessful) {
+      throw new Error("Balance reservation failed");
+    }
+
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+
+      const [order] = await Order.create(
+        [
+          {
+            _id: orderId,
             amount,
+            customerId,
           },
-        },
-      ],
-      { session },
-    );
+        ],
+        { session },
+      );
 
-    await session.commitTransaction();
+      await Outbox.create(
+        [
+          {
+            aggregateId: order._id.toString(),
+            topic: KafkaTopics.OrderCreated,
+            eventType: EventTypes.OrderCreated,
+            payload: {
+              orderId,
+              customerId,
+              amount,
+            },
+          },
+        ],
+        { session },
+      );
 
-    response.status(201).json({ message: "Order Created", order });
+      await session.commitTransaction();
+
+      response.status(201).json({ message: "Order Created", order });
+    } catch (err) {
+      await session.abortTransaction();
+    } finally {
+      session.endSession();
+    }
   } catch (err) {
-    await session.abortTransaction();
     console.error({ err });
-    throw new Error("Error in create Order API", err);
-  } finally {
-    session.endSession();
+    response.status(500).json({
+      message: "Error in create Order API",
+      err,
+    });
   }
 });
 

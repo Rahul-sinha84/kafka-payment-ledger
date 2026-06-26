@@ -12,6 +12,12 @@ const PORT = process.env.ORDER_SERVICE_PORT || 8000;
 
 app.use(e.json());
 
+app.get("/", async (request, response) => {
+  response.status(200).json({
+    message: "Hello from Order-Service!",
+  });
+});
+
 app.use("/order-service", orderRouter);
 
 app.listen(PORT, async () => {

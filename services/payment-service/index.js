@@ -6,6 +6,7 @@ import { Kafka } from "kafkajs";
 import InboxEvent from "./src/db/models/inboxEvent.js";
 import mongoose from "mongoose";
 import Payment from "./src/db/models/payment.js";
+import { PaymentDeclinedError } from "./src/error.js";
 
 const MAX_RETRY_COUNT = 3;
 
@@ -20,7 +21,11 @@ const producer = kafka.producer();
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const chargeCustomer = () => {
-  if (Math.random() < 0.3) throw new Error("Payment processor failed");
+  // just for simulation
+  // ? payment declined error: error is clearly defined from the payment provider
+  // ? other error: unknown error, occurred during network calls, etc
+  if (Math.random() <= 0.15) throw new PaymentDeclinedError("Payment failure");
+  else if (Math.random() < 0.3) throw new Error("Payment processing failed");
   return true;
 };
 
@@ -68,7 +73,7 @@ const handleOrderCreatedMessage = async (message) => {
 
     // announce in the payment.created topic
     await producer.send({
-      topic: KafkaTopics.PaymentCreated,
+      topic: KafkaTopics.PaymentCompleted,
       messages: [
         {
           value: JSON.stringify({ orderId, amount }),
@@ -89,6 +94,23 @@ const processWithRetry = async (message, maxRetry = MAX_RETRY_COUNT) => {
     } catch (err) {
       console.warn(`Attempt ${i}/${maxRetry} failed: ${err?.message || err}`);
       if (i < maxRetry) await sleep(2000);
+
+      if (err instanceof PaymentDeclinedError) {
+        // sending the message to payment.failed topic
+        // ? no need to retry as it's a known error
+        // retries are done in case of unknown errors
+        await producer.send({
+          topic: KafkaTopics.PaymentFailed,
+          messages: [
+            {
+              key: message.key,
+              value: message.value,
+              headers: { ...message.headers },
+            },
+          ],
+        });
+        return;
+      }
     }
   }
 
