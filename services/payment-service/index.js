@@ -71,7 +71,7 @@ const handleOrderCreatedMessage = async (message) => {
       session.endSession();
     }
 
-    // announce in the payment.created topic
+    // announce in the payments.completed topic
     await producer.send({
       topic: KafkaTopics.PaymentCompleted,
       messages: [
@@ -96,7 +96,7 @@ const processWithRetry = async (message, maxRetry = MAX_RETRY_COUNT) => {
       if (i < maxRetry) await sleep(2000);
 
       if (err instanceof PaymentDeclinedError) {
-        // sending the message to payment.failed topic
+        // sending the message to payments.failed topic
         // ? no need to retry as it's a known error
         // retries are done in case of unknown errors
         await producer.send({
