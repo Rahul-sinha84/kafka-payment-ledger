@@ -2,4 +2,5 @@ services/order-service/node_modules
 services/log-service/node_modules
 services/payment-service/node_modules
 services/ledger-service/node_modules
+services/notification-service/node_modules
 .env

@@ -1,4 +1,4 @@
-import { KafkaTopics } from "../config.js";
+import { KafkaTopics, MAX_PROCESS_RETRY_COUNT } from "../config.js";
 import "./env.js";
 
 import { setupMongoConnection } from "./src/db/connection.js";
@@ -7,8 +7,6 @@ import InboxEvent from "./src/db/models/inboxEvent.js";
 import mongoose from "mongoose";
 import Payment from "./src/db/models/payment.js";
 import { PaymentDeclinedError } from "./src/error.js";
-
-const MAX_RETRY_COUNT = 3;
 
 const kafka = new Kafka({
   clientId: "payment-service",
@@ -76,8 +74,8 @@ const handleOrderCreatedMessage = async (message) => {
       topic: KafkaTopics.PaymentCompleted,
       messages: [
         {
-          value: JSON.stringify({ orderId, amount }),
-          key: orderId,
+          value: message.value,
+          key: message.key,
         },
       ],
     });
@@ -86,7 +84,7 @@ const handleOrderCreatedMessage = async (message) => {
   }
 };
 
-const processWithRetry = async (message, maxRetry = MAX_RETRY_COUNT) => {
+const processWithRetry = async (message, maxRetry = MAX_PROCESS_RETRY_COUNT) => {
   for (let i = 1; i <= maxRetry; i++) {
     try {
       await handleOrderCreatedMessage(message);

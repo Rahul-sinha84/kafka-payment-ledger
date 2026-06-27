@@ -8,8 +8,11 @@ export const KafkaTopics = {
   OrderCreatedDLQ: "orders.created.dlq",
   PaymentCompleted: "payments.completed",
   PaymentFailed: "payments.failed",
+  NotificationDLQ: "notifications.dlq",
 };
 
 export const EventTypes = {
   OrderCreated: "OrderCreated",
 };
+
+export const MAX_PROCESS_RETRY_COUNT = 3;

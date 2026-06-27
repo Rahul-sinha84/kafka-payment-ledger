@@ -23,20 +23,42 @@ const run = async () => {
           case KafkaTopics.OrderCreated: {
             const { orderId, amount } = JSON.parse(message.value.toString());
 
-            console.log(`Order created for ${orderId}, of amount: ${amount}.`);
+            console.log(
+              `[+] Order created for ${orderId}, of amount: ${amount}.`,
+            );
             break;
           }
           case KafkaTopics.OrderCreatedDLQ: {
             const { orderId, amount } = JSON.parse(message.value.toString());
 
-            console.log(`Order reached DLQ:${orderId}, of amount: ${amount}.`);
+            console.log(
+              `[+] Order reached DLQ: ${orderId}, of amount: ${amount}.`,
+            );
             break;
           }
           case KafkaTopics.PaymentCompleted: {
             const { orderId, amount } = JSON.parse(message.value.toString());
 
             console.log(
-              `Payment completed for ${orderId}, of amount: ${amount}.`,
+              `[+] Payment completed for ${orderId}, of amount: ${amount}.`,
+            );
+            break;
+          }
+          case KafkaTopics.PaymentFailed: {
+            const { orderId, amount } = JSON.parse(message.value.toString());
+
+            console.log(
+              `[+] Payment failed for ${orderId}, of amount: ${amount}.`,
+            );
+            break;
+          }
+          case KafkaTopics.NotificationDLQ: {
+            const { orderId, amount, customerEmail } = JSON.parse(
+              message.value.toString(),
+            );
+
+            console.log(
+              `[+] Notification  reached DLQ for ${customerEmail}, orderId: ${orderId}, of amount: ${amount}.`,
             );
             break;
           }

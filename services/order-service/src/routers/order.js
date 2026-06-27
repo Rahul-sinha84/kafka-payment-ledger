@@ -12,7 +12,19 @@ orderRouter.post("/", async (request, response) => {
     console.log(request.body);
     const { ObjectId } = mongoose.Types;
     const orderId = new ObjectId().toString();
-    const { amount, customerId } = request.body;
+    const { amount, customerId, customerEmail } = request.body;
+
+    if (!amount || !customerId || !customerEmail) {
+      const missingValues = [];
+      if (!amount) missingValues.push("amount");
+      if (!customerEmail) missingValues.push("customerEmail");
+      if (!customerId) missingValues.push("customerId");
+
+      return response.status(400).json({
+        message: "Bad request",
+        missingValues,
+      });
+    }
 
     // check the balance from the ledger service first
     const isReservedSuccessful = await reserveFunds({
@@ -49,6 +61,7 @@ orderRouter.post("/", async (request, response) => {
             payload: {
               orderId,
               customerId,
+              customerEmail,
               amount,
             },
           },
