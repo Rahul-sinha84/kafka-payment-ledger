@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export const LedgerStatus = {
   RESERVED: "reserved",
   CONFIRMED: "confirmed",
+  REVERSED: "reversed",
 };
 
 export const LedgerType = {

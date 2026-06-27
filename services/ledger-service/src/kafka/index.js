@@ -59,6 +59,14 @@ const handlePaymentFailedMessage = async (message) => {
         { session },
       );
 
+      // update the reserved ledger status to REVERSED
+      const reserveEventId = getReserveEventId(orderId);
+      await Ledger.findOneAndUpdate(
+        { eventId: reserveEventId },
+        { $set: { status: LedgerStatus.REVERSED } },
+        { session },
+      );
+
       await session.commitTransaction();
     } catch (err) {
       console.log({ err });
@@ -88,7 +96,6 @@ export default async () => {
             // marking the ledger status to "CONFIRMED"
             // ? balance is already subtracted in the reserve api
             const { orderId } = JSON.parse(message.value.toString());
-            // TODO how to find eventId from the message?
             const eventId = getReserveEventId(orderId);
 
             // ? no idempotency check here because this operation is idempotent already
