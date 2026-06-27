@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+export const OrderStatus = {
+  IN_PROCESS: "in_process",
+  COMPLETED: "completed",
+  FAILED: "failed",
+};
+
 const OrderSchema = new mongoose.Schema(
   {
     amount: {
@@ -9,6 +15,12 @@ const OrderSchema = new mongoose.Schema(
     customerId: {
       required: true,
       type: String,
+    },
+    status: {
+      type: String,
+      enum: Object.values(OrderStatus),
+      required: true,
+      default: OrderStatus.IN_PROCESS,
     },
   },
   {

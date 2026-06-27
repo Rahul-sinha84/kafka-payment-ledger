@@ -9,6 +9,7 @@ export const KafkaTopics = {
   PaymentCompleted: "payments.completed",
   PaymentFailed: "payments.failed",
   NotificationDLQ: "notifications.dlq",
+  OrderStatusDLQ: "orders.status.dlq",
 };
 
 export const EventTypes = {

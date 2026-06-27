@@ -18,14 +18,13 @@ const consumer = kafka.consumer({ groupId: "notification-service" });
 const producer = kafka.producer();
 
 const sleep = async (ms) => {
-  new Promise((resolve) => {
+  await new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
 const processWithRetry = async (
   messageHandler,
-  consumer,
   producer,
   message,
   topic,
@@ -34,7 +33,7 @@ const processWithRetry = async (
   try {
     for (let attempt = 1; attempt <= maxRetry; attempt += 1) {
       try {
-        await messageHandler(consumer, message);
+        await messageHandler(message);
         return;
       } catch (err) {
         console.warn(
@@ -86,7 +85,6 @@ const run = async () => {
           case KafkaTopics.OrderCreated: {
             await processWithRetry(
               handleOrderCreatedMessage,
-              consumer,
               producer,
               message,
               topic,
@@ -96,7 +94,6 @@ const run = async () => {
           case KafkaTopics.PaymentCompleted: {
             await processWithRetry(
               handlePaymentCompletedMessage,
-              consumer,
               producer,
               message,
               topic,
@@ -106,7 +103,6 @@ const run = async () => {
           case KafkaTopics.PaymentFailed: {
             await processWithRetry(
               handlePaymentFailedMessage,
-              consumer,
               producer,
               message,
               topic,

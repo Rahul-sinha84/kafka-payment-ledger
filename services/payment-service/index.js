@@ -16,7 +16,9 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "payment-service" });
 const producer = kafka.producer();
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = async (ms) => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 const chargeCustomer = () => {
   // just for simulation
@@ -84,14 +86,17 @@ const handleOrderCreatedMessage = async (message) => {
   }
 };
 
-const processWithRetry = async (message, maxRetry = MAX_PROCESS_RETRY_COUNT) => {
+const processWithRetry = async (
+  message,
+  maxRetry = MAX_PROCESS_RETRY_COUNT,
+) => {
   for (let i = 1; i <= maxRetry; i++) {
     try {
       await handleOrderCreatedMessage(message);
       return;
     } catch (err) {
       console.warn(`Attempt ${i}/${maxRetry} failed: ${err?.message || err}`);
-      if (i < maxRetry) await sleep(2000);
+      if (i < maxRetry) await sleep(2000 * i);
 
       if (err instanceof PaymentDeclinedError) {
         // sending the message to payments.failed topic

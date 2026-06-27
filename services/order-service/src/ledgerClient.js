@@ -26,7 +26,7 @@ export const reserveFunds = async (
       console.warn(`Attempt ${attempt}/${maxRetries} failed`, err?.message);
 
       // exponential backoff retrial
-      if (attempt < maxRetries) await sleep(1000 * attempt);
+      if (attempt < maxRetries) await sleep(2000 * attempt);
       else throw err;
     }
   }

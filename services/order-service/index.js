@@ -6,6 +6,7 @@ import "./env.js";
 import e from "express";
 import { setupMongoConnection } from "./src/db/connection.js";
 import orderRouter from "./src/routers/order.js";
+import runKafka from "./src/kafka/index.js";
 
 const app = e();
 const PORT = process.env.ORDER_SERVICE_PORT || 8000;
@@ -23,6 +24,7 @@ app.use("/order-service", orderRouter);
 app.listen(PORT, async () => {
   try {
     await setupMongoConnection();
+    await runKafka()
     console.info("Server started on", PORT);
   } catch (err) {
     console.log({ err }, "Error starting the server");

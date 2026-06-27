@@ -11,7 +11,7 @@ const simulateNotification = (customerEmail, text) => {
   return true;
 };
 
-export const handleOrderCreatedMessage = async (consumer, message) => {
+export const handleOrderCreatedMessage = async (message) => {
   const { orderId, customerEmail } = JSON.parse(message.value.toString());
   const eventId = getOrderCreatedEventId(orderId);
 
@@ -34,7 +34,7 @@ export const handleOrderCreatedMessage = async (consumer, message) => {
   await Inbox.create({ eventId });
 };
 
-export const handlePaymentCompletedMessage = async (consumer, message) => {
+export const handlePaymentCompletedMessage = async (message) => {
   const { orderId, customerEmail } = JSON.parse(message.value.toString());
   const eventId = getPaymentCompletedEventId(orderId);
 
@@ -52,7 +52,7 @@ export const handlePaymentCompletedMessage = async (consumer, message) => {
   await Inbox.create({ eventId });
 };
 
-export const handlePaymentFailedMessage = async (consumer, message) => {
+export const handlePaymentFailedMessage = async (message) => {
   const { orderId, customerEmail } = JSON.parse(message.value.toString());
   const eventId = getPaymentFailedEventId(orderId);
 
