@@ -71,27 +71,27 @@ flowchart TD
     class DLQ dlq
 ```
 
-| Style                                | Meaning                                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------ |
-| Color (teal / blue / violet / amber) | Each color = one service, used consistently everywhere it appears                          |
-| Gray hexagon                         | A Kafka topic                                                                              |
-| Dark double-bordered box             | Dead-letter queue (collapses the real per-service DLQ topics into one box for readability) |
-| `==>` thick arrow                    | The one moment data enters Kafka (Relay draining the outbox)                               |
-| `-->` thin arrow                     | Normal Kafka publish/subscribe                                                             |
-| `-.->` dashed arrow                  | Exception to "everything goes through Kafka" — a sync HTTP call, or a failure path         |
+| Style | Meaning |
+|---|---|
+| Color (teal / blue / violet / amber) | Each color = one service, used consistently everywhere it appears |
+| Gray hexagon | A Kafka topic |
+| Dark double-bordered box | Dead-letter queue (collapses the real per-service DLQ topics into one box for readability) |
+| `==>` thick arrow | The one moment data enters Kafka (Relay draining the outbox) |
+| `-->` thin arrow | Normal Kafka publish/subscribe |
+| `-.->` dashed arrow | Exception to "everything goes through Kafka" — a sync HTTP call, or a failure path |
 
 A standalone **Log Service** also subscribes to every topic and prints each event to stdout — not part of the core flow, just a convenient way to watch the whole pipeline live during development or a demo.
 
 ## Services
 
-| Service                    | Port | Owns (own MongoDB)     | Consumer group         | Listens to                                                | Publishes                                                        |
-| -------------------------- | ---- | ---------------------- | ---------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Order Service**          | 8000 | `orders`, `outbox`     | `order-service`        | `payments.completed`, `payments.failed`                   | `orders.created` (via Relay)                                     |
-| **Relay**                  | —    | reads Order's `outbox` | —                      | —                                                         | `orders.created`                                                 |
-| **Payment Service**        | —    | `payment`, inbox       | `payment-service`      | `orders.created`                                          | `payments.completed`, `payments.failed`                          |
-| **Ledger Service**         | 8001 | `ledger`, `balances`   | `ledger-service`       | `payments.completed`, `payments.failed`                   | — (exposes `POST /ledger-service/reserve`, called synchronously) |
-| **Notification Service**   | —    | inbox                  | `notification-service` | `orders.created`, `payments.completed`, `payments.failed` | —                                                                |
-| **Log Service** (dev tool) | —    | none                   | `log-service`          | everything                                                | —                                                                |
+| Service | Port | Owns (own MongoDB) | Consumer group | Listens to | Publishes |
+|---|---|---|---|---|---|
+| **Order Service** | 8000 | `orders`, `outbox` | `order-service` | `payments.completed`, `payments.failed` | `orders.created` (via Relay) |
+| **Relay** | — | reads Order's `outbox` | — | — | `orders.created` |
+| **Payment Service** | — | `payment`, inbox | `payment-service` | `orders.created` | `payments.completed`, `payments.failed` |
+| **Ledger Service** | 8001 | `ledger`, `balances` | `ledger-service` | `payments.completed`, `payments.failed` | — (exposes `POST /ledger-service/reserve`, called synchronously) |
+| **Notification Service** | — | inbox | `notification-service` | `orders.created`, `payments.completed`, `payments.failed` | — |
+| **Log Service** (dev tool) | — | none | `log-service` | everything | — |
 
 Kafka topics are centralized in `services/config.js`, imported by every service — so topic names are never typed as raw strings in service code.
 
@@ -127,12 +127,12 @@ Node.js · Express · Mongoose (MongoDB) · KafkaJS · Docker Compose (Kafka in 
 ## Project structure
 
 ```
+docker-compose.yml                   Kafka + Kafka UI
 services/
 ├── config.js                      (shared: topic names, statuses, retry config)
 ├── order-service/
 │   ├── index.js                    Express server + Kafka consumer (status updates)
 │   ├── relay-service.js            standalone outbox-draining process
-│   ├── docker-compose.yml          Kafka + Kafka UI
 │   ├── src/db/models/               order.js, outbox.js
 │   ├── src/kafka/                   index.js, controllers.js
 │   ├── src/ledgerClient.js
@@ -167,7 +167,7 @@ mongosh --eval "rs.initiate()"   # one-time
 Then bring up Kafka:
 
 ```bash
-docker compose -f services/order-service/docker-compose.yml up -d
+docker compose up -d
 ```
 
 Create a `.env` file at the **repo root** (each service loads it via `../../.env`):
@@ -187,7 +187,7 @@ Seed a balance manually before placing an order — there's no endpoint for this
 
 ```js
 // in the ledger-service database
-db.balances.insertOne({ customerId: "cust-1", balance: 500 });
+db.balances.insertOne({ customerId: "cust-1", balance: 500 })
 ```
 
 Start each service in its own terminal:
