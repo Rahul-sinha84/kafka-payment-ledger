@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "dotenv": "^17.4.2",
     "kafkajs": "^2.2.4",

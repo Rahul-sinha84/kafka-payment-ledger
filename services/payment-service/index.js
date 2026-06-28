@@ -61,7 +61,7 @@ const handleOrderCreatedMessage = async (message) => {
         { session },
       );
 
-      await InboxEvent.create([{ eventId }], session);
+      await InboxEvent.create([{ eventId }], { session });
 
       await session.commitTransaction();
     } catch (err) {
@@ -146,7 +146,7 @@ const run = async () => {
       eachMessage: async ({ topic, partition, message }) => {
         switch (topic) {
           case KafkaTopics.OrderCreated: {
-            processWithRetry(message);
+            await processWithRetry(message);
             break;
           }
           default: {

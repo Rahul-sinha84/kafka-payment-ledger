@@ -43,7 +43,6 @@ ledgerRouter.post("/reserve", async (request, response) => {
           new: true,
           session,
         },
-        { balance: 1 },
       );
 
       if (!balanceRecord) {

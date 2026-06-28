@@ -9,7 +9,7 @@ const InboxSchema = new mongoose.Schema(
     },
     processedAt: {
       type: Date,
-      default: new Date(),
+      default: Date.now,
     },
   },
   { timestamps: true },

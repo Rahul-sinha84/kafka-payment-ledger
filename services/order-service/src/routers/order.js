@@ -74,6 +74,7 @@ orderRouter.post("/", async (request, response) => {
       response.status(201).json({ message: "Order Created", order });
     } catch (err) {
       await session.abortTransaction();
+      throw err;
     } finally {
       session.endSession();
     }

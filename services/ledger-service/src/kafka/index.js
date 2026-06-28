@@ -11,7 +11,6 @@ const kafka = new Kafka({
 });
 
 const consumer = kafka.consumer({ groupId: "ledger-service" });
-const producer = kafka.producer();
 
 const handlePaymentFailedMessage = async (message) => {
   try {
@@ -42,7 +41,10 @@ const handlePaymentFailedMessage = async (message) => {
           { session },
         );
       } catch (err) {
-        if (err?.code === 11000) return; // known duplication error, ignore
+        if (err?.code === 11000) {
+          await session.abortTransaction();
+          return; // known duplication error, ignore
+        }
         throw err;
       }
 
@@ -81,11 +83,10 @@ const handlePaymentFailedMessage = async (message) => {
 
 export default async () => {
   try {
-    await producer.connect();
     await consumer.connect();
 
     consumer.subscribe({
-      topics: Object.values(KafkaTopics),
+      topics: [KafkaTopics.PaymentCompleted, KafkaTopics.PaymentFailed],
       fromBeginning: true,
     });
 
@@ -107,7 +108,7 @@ export default async () => {
           }
 
           case KafkaTopics.PaymentFailed: {
-            handlePaymentFailedMessage(message);
+            await handlePaymentFailedMessage(message);
             break;
           }
           default: {
