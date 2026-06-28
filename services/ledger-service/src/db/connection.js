@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Order from "./models/balance.js";
 
 let isConnected = false;
 let connectionAttempts = 0;
@@ -88,11 +87,6 @@ export const setupMongoConnection = async (syncIndexes = false) => {
     mongoose.connection.on("connecting", () => {
       console.debug("Connecting to MongoDB...");
     });
-
-    if (syncIndexes) {
-      await Order.syncIndexes();
-      console.info("MongoDB indexes synced successfully");
-    }
 
     return mongoose.connection;
   } catch (err) {
